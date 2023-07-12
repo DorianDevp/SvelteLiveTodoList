@@ -47,11 +47,11 @@
 <div class="container">
     <div class="wrapper">
         {#if !dateStarted}
-            <h3>Ile godzin będziesz pracować?</h3>
+            <h3>How many hours will you work?</h3>
             <input type="number" min="0,2" bind:value={workTime} />
             <button
                 on:click={() => startTimer()}>
-                Rozpocznij dzień ⌛️
+                Start your day ⌛️
             </button>
         {:else if dateStarted && timeRemaing !== null}
             <div class="time-spans">
@@ -59,8 +59,8 @@
                 <div class="time-fullffilled" style="width: {timeFullfilled}"></div>
             </div>
             <div class="time-content">
-                <p class="time-remaining">Pozostało: <span>{timeRemaing.toLocaleTimeString()}</span></p>
-                <p class="time-remaining">Czas zakończenia: <span>{endOfTheDay.toLocaleTimeString()}</span></p>
+                <p class="time-remaining">Time left: <span>{timeRemaing.toLocaleTimeString()}</span></p>
+                <p class="time-remaining">End: <span>{endOfTheDay.toLocaleTimeString()}</span></p>
             </div>
             <Todo currentDate={currentDate}></Todo>
         {/if}
@@ -124,7 +124,7 @@
         margin-top: -40px;
     }
     .time-remaining {
-        color: rgb(51, 56, 82);
+        color: rgb(106, 113, 153);
         font-size: 20px;
     }
 

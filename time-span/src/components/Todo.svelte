@@ -26,24 +26,25 @@
 
 </script>
 
-<input type="text" placeholder="Napisz taska" bind:value={currentTask}>
+<input type="text" disabled={taskStarted} placeholder="Write your task..." bind:value={currentTask}>
 {#if  !taskStarted}
-    <button on:click={() => addTask(currentTask)}>Dodaj taska</button>
+    <button on:click={() => addTask(currentTask)}>Add Task</button>
 {:else}
-    <button class="task-ender" on:click={() => endTask()}>Zakończ taska</button>
+    <button class="task-ender" on:click={() => endTask()}>End Task</button>
 {/if}
-
-<div class="task-wrapper">
-    {#each taskList as {taskContent, timeStarted, timeEnded} }
-        <div class="task-container">
-            <p>{taskContent}</p>
-            <div class="time-wrapper">
-                <p>{timeStarted}</p>
-                <p>{timeEnded}</p>
+{#if taskList[0]}
+    <div class="task-wrapper">
+        {#each taskList as {taskContent, timeStarted, timeEnded} }
+            <div class="task-container">
+                <p>{taskContent}</p>
+                <div class="time-wrapper">
+                    <p>{timeStarted}</p>
+                    <p>{timeEnded}</p>
+                </div>
             </div>
-        </div>
-    {/each}
-</div>
+        {/each}
+    </div>
+{/if}
 
 <style>
     .task-wrapper {
