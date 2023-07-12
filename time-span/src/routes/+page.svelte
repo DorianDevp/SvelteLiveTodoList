@@ -4,7 +4,7 @@
 
     let workTime: null|string = null;
     let timeFullfilled: null|string = null;
-    let diff: null|Date = null;
+    let timeRemaing: null|Date = null;
 
     $: currentDate = new Date();
     $: endOfTheDay = addMinutesToCurrentDate(workTime);
@@ -13,8 +13,8 @@
     function startTimer() {
         let i = 0;
         const startDay = setInterval(() => {
-            diff = setTimeRemaining();
-            if (diff !== null) {
+            timeRemaing = setTimeRemaining();
+            if (timeRemaing !== null) {
                 dateStarted = true;
                 currentDate = new Date();
                 timeFullfilled = `${(i++ * 100)/ (Number(workTime)*3600)}%`;
@@ -26,13 +26,13 @@
     }
 
     function setTimeRemaining(): null|Date {
-        let diff: null|Date = new Date(endOfTheDay.getTime() - currentDate.getTime());
-        if (diff.getTime() <= 0) {
+        let timeDiff: null|Date = new Date(endOfTheDay.getTime() - currentDate.getTime());
+        if (timeDiff.getTime() <= 0) {
             return null
         }
-        diff.setMinutes(diff.getMinutes() - 60);
+        timeDiff.setMinutes(timeDiff.getMinutes() - 60);
 
-        return diff
+        return timeDiff
     };
 
     function addMinutesToCurrentDate (minutes: Number|string): Date {
@@ -53,13 +53,13 @@
                 on:click={() => startTimer()}>
                 Rozpocznij dzień ⌛️
             </button>
-        {:else if dateStarted && diff !== null}
+        {:else if dateStarted && timeRemaing !== null}
             <div class="time-spans">
                 <div class="time-span"></div>
                 <div class="time-fullffilled" style="width: {timeFullfilled}"></div>
             </div>
             <div class="time-content">
-                <p class="time-remaining">Pozostało: <span>{diff.toLocaleTimeString()}</span></p>
+                <p class="time-remaining">Pozostało: <span>{timeRemaing.toLocaleTimeString()}</span></p>
                 <p class="time-remaining">Czas zakończenia: <span>{endOfTheDay.toLocaleTimeString()}</span></p>
             </div>
             <Todo currentDate={currentDate}></Todo>

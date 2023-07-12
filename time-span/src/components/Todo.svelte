@@ -19,8 +19,9 @@
     }
     function endTask() {
         taskList.findLast((task: Task) => task.timeEnded = currentDate.toLocaleTimeString() );
-        taskList = taskList
+        taskList = taskList;
         taskStarted = false;
+        currentTask = '';
     }
 
 </script>
