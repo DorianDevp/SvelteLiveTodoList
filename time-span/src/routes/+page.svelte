@@ -2,14 +2,9 @@
     import { onMount } from "svelte";
     import Todo from "../components/Todo.svelte";
 
-    interface WorkLifeBalance {
-        diffTime: null|Date,
-        timeCompletion: null|string;
-    };
-
-    let workTime: any = null;
-    let timeFullfilled: WorkLifeBalance['timeCompletion'] = null;
-    let diff: WorkLifeBalance['diffTime'] = null;
+    let workTime: null|string = null;
+    let timeFullfilled: null|string = null;
+    let diff: null|Date = null;
 
     $: currentDate = new Date();
     $: endOfTheDay = addMinutesToCurrentDate(workTime);
@@ -31,7 +26,7 @@
     }
 
     function setTimeRemaining(): null|Date {
-        let diff: WorkLifeBalance['diffTime'] = new Date(endOfTheDay.getTime() - currentDate.getTime());
+        let diff: null|Date = new Date(endOfTheDay.getTime() - currentDate.getTime());
         if (diff.getTime() <= 0) {
             return null
         }
@@ -40,7 +35,7 @@
         return diff
     };
 
-    function addMinutesToCurrentDate (minutes: Number): Date {
+    function addMinutesToCurrentDate (minutes: Number|string): Date {
         const date: Date = new Date();
         date.setMinutes(date.getMinutes() + Number(minutes)*60);
 
