@@ -5,24 +5,32 @@
     let workTime: null|string = null;
     let timeFullfilled: null|string = null;
     let timeRemaing: null|Date = null;
+    let addedTime: number|string;
 
     $: currentDate = new Date();
     $: endOfTheDay = addMinutesToCurrentDate(workTime);
     $: dateStarted = false;
 
+
     function startTimer() {
         let i = 0;
-        const startDay = setInterval(() => {
-            timeRemaing = setTimeRemaining();
-            if (timeRemaing !== null) {
-                dateStarted = true;
-                currentDate = new Date();
-                timeFullfilled = `${(i++ * 100)/ (Number(workTime)*3600)}%`;
-            } else {
-                dateStarted = false;
-                clearInterval(startDay);
-            }
+        const interval = setInterval(() => {
+            startDay(interval);
+            timeFullfilled = `${(i++ * 100)/ (Number(workTime)*3600)}%`;
         }, 1000);
+
+        startDay(interval);
+    }
+
+    function startDay(dayFinisher: number) {
+        timeRemaing = setTimeRemaining();
+        if (timeRemaing !== null) {
+            dateStarted = true;
+            currentDate = new Date();
+        } else {
+            dateStarted = false;
+            clearInterval(dayFinisher);
+        }
     }
 
     function setTimeRemaining(): null|Date {
@@ -42,13 +50,18 @@
         return date
     };
 
+    function addTimeToYourDay(minutes: Number|string) {
+        endOfTheDay.setMinutes(endOfTheDay.getMinutes() + Number(minutes)*60);
+        endOfTheDay = endOfTheDay;
+    }
+
 </script>
 
 <div class="container">
     <div class="wrapper">
         {#if !dateStarted}
             <h3>How many hours will you work?</h3>
-            <input type="number" min="0,2" bind:value={workTime} />
+            <input type="number" bind:value={workTime} />
             <button
                 on:click={() => startTimer()}>
                 Start your day ⌛️
@@ -60,14 +73,34 @@
             </div>
             <div class="time-content">
                 <p class="time-remaining">Time left: <span>{timeRemaing.toLocaleTimeString()}</span></p>
-                <p class="time-remaining">End: <span>{endOfTheDay.toLocaleTimeString()}</span></p>
+                <p class="time-remaining">End at: <span>{endOfTheDay.toLocaleTimeString()}</span></p>
             </div>
-            <Todo currentDate={currentDate}></Todo>
+            <div style="display: flex; justify-content: space-between">
+                <input type="number" bind:value={addedTime}>
+                <button on:click={() => addTimeToYourDay(addedTime)}>Add time +</button>
+            </div>
         {/if}
     </div>
+    {#if dateStarted && timeRemaing !== null}
+        <div class="wrapper">
+            <Todo currentLocaleTime={currentDate.toLocaleTimeString()}></Todo>
+        </div>
+    {/if}
 </div>
 
-<style>
+<style lang="scss">
+    $theme-red: #f37d7d;
+    $theme-green: #09e083;
+    $theme-bright-green: #acf37d;
+    $theme-green-hoover: #057f4a;
+    $theme-dark-green: #0a3e07;
+    $darker-main: #1b1e2d;
+    $lighter-main: rgb(51, 56, 82);
+    $main: #333852;
+    $bright-main: #6a7199;
+    $inactive-main: #292d41;
+
+
     :global() {
         font-family: 'Lato';
     }
@@ -79,24 +112,24 @@
         font-size: 16px;
     }
     :global(p) span {
-        color: rgb(9, 224, 131);
+        color: white;
         font-size: 16px;
     }
     :global(input) {
-        background-color: rgb(27, 30, 45);
-        border: 1px solid rgb(106, 113, 153);
+        background-color: $darker-main;
+        border: 1px solid $bright-main;
         border-radius: 10px;
         padding: 10px;
         color: white;
         font-size: 18px;
     }
     :global(input)::placeholder {
-        color: rgb(106, 113, 153);
+        color: $bright-main;
     }
     :global(button) {
         cursor: pointer;
         padding: 10px;
-        background-color: rgb(9, 224, 131);
+        background-color: $theme-green;
         border: none;
         border-radius: 10px;
         font-size: 18px;
@@ -105,46 +138,53 @@
         color: #0a3e07;;
     }
     :global(button:hover) {
-        background-color: rgb(5, 127, 74);
+        background-color: $theme-green-hoover;
     }
-    .time-span {
+    .time-spans {
         position: relative;
     }
     .time-span {
         width: 100%;
         height: 40px;
-        background-color: rgb(243, 125, 125);
+        background-color: $inactive-main;
         border-radius: 10px;
     }
     .time-fullffilled {
         position: absolute;
         height: 40px;
-        background-color: rgb(172, 243, 125);
+        background-color: $theme-bright-green;
         border-radius: 10px;
         margin-top: -40px;
+
     }
     .time-remaining {
-        color: rgb(106, 113, 153);
+        color: $darker-main;
         font-size: 20px;
+        font-weight: bold;
     }
-
     .container {
-        background-color: rgb(51, 56, 82);
-        margin: 0 20%;
-        padding: 20px;
-        border-radius: 15px;
+        display: flex;
+        align-items: self-start;
+        gap: 40px;
+        margin: 0 10%;
+        @media (min-width: 1360px) {
+            margin: 0 15%;
+
+        }
     }
     .wrapper {
+        width: 100%;
         display: flex;
         flex-direction: column;
         gap: 15px;
+        background-color: rgb(51, 56, 82);
+        padding: 20px;
+        border-radius: 15px;
     }
     .time-content {
         display: flex;
         align-items: center;
-        gap: 15px;
+        gap: 20px;
         padding: 10px;
-        background-color: rgb(27, 30, 45);;
-        border-radius: 10px;
     }
 </style>
