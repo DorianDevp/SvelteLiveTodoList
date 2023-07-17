@@ -75,9 +75,9 @@
                 <p class="time-remaining">Time left: <span>{timeRemaing.toLocaleTimeString()}</span></p>
                 <p class="time-remaining">End at: <span>{endOfTheDay.toLocaleTimeString()}</span></p>
             </div>
-            <div style="display: flex; justify-content: space-between">
-                <input type="number" bind:value={addedTime}>
-                <button on:click={() => addTimeToYourDay(addedTime)}>Add time +</button>
+            <div class="add-time">
+                <input type="number" placeholder="Type time to add" bind:value={addedTime}>
+                <button on:click={() => addTimeToYourDay(addedTime)}>Add time</button>
             </div>
         {/if}
     </div>
@@ -91,7 +91,7 @@
 <style lang="scss">
     $theme-red: #f37d7d;
     $theme-green: #09e083;
-    $theme-bright-green: #acf37d;
+    $theme-bright-green: #757eab;
     $theme-green-hoover: #057f4a;
     $theme-dark-green: #0a3e07;
     $darker-main: #1b1e2d;
@@ -186,5 +186,14 @@
         align-items: center;
         gap: 20px;
         padding: 10px;
+    }
+    .add-time {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+
+        input {
+            grid-column: 1/3;
+        }
     }
 </style>

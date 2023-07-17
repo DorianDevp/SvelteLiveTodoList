@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Loading from "./LoadingDots.svelte";
     export let currentLocaleTime: string;
 
     interface Task {
@@ -17,6 +18,8 @@
     $: taskStarted = false;
 
     $: pause = false;
+
+    $: optionsShown = false;
 
     function addTask(taskName: string) {
         taskStarted = true;
@@ -68,9 +71,13 @@
         taskList = taskList;
     }
 
+    function showOptions() {
+        optionsShown = !optionsShown;
+    }
+
 </script>
 
-<input type="text" disabled={taskStarted} placeholder="Write your task..." bind:value={currentTask}>
+<input type="text" disabled={taskStarted} placeholder="Write your task..." bind:value={currentTask} on:keyup={(event) =>  event.key === "Enter" ? addTask(currentTask) : ''}>
 {#if  !taskStarted}
     <button on:click={() => addTask(currentTask)}>Add Task +</button>
 {:else}
@@ -90,17 +97,79 @@
                     {#each task.timeSpan as {started, ended} }
                         <div class="time-box">
                             <p>{started}</p>
-                            <p>{ended}</p>
+                            {#if ended}
+                                <p>{ended}</p>
+                            {:else}
+                                <Loading/>
+                            {/if}
                         </div>
                     {/each}
                 </div>
-                <button on:click={() => reactivateTask(task)}>Reactivate</button>
+                {#if !taskStarted}
+                    <div class="more" on:click={() => showOptions()}>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+
+                        {#if optionsShown}
+                            <div class="options">
+                                <button class="option-button" on:click={() => reactivateTask(task)}>Reactivate</button>
+                                <button>Incoming feature</button>
+                            </div>
+                        {/if}
+                    </div>
+                {/if}
             </div>
         {/each}
     </div>
 {/if}
 
 <style lang="scss">
+    .more {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        aspect-ratio:  1;
+        gap: 3px;
+        background-color: #333852;
+        padding: 10px;
+        border-radius: 50%;
+        transition: .1s;
+
+        &:hover {
+            cursor: pointer;
+            background-color: #aaaaaa;
+        }
+
+        .dot {
+            width: 5px;
+            height: 5px;
+            background-color: #1b1e2d;
+            border-radius: 50%;
+            margin-top: 150%;
+        }
+    }
+    .options {
+        transform: translateX(54%);
+        position: absolute;
+        background-color: #1b1e2d;
+        border: 1px solid #6a7199;
+        border-radius: 10px;
+
+        button {
+            background-color: transparent;
+            color: white;
+            font-weight: 100;
+            font-size: 16px;
+            border-radius: 0px;
+            border-bottom: 1px solid #6a7199;
+
+            &:last-child {
+                border: none;
+            }
+        }
+    }
+
     .task-wrapper {
         display: flex;
         flex-direction: column;
@@ -111,6 +180,7 @@
     .task-container {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         padding: 15px 5px;
         border-bottom: 1px solid rgb(106, 113, 153);
     }
