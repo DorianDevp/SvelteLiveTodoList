@@ -2,9 +2,9 @@
     import { onMount } from "svelte";
     import Todo from "../components/Todo.svelte";
 
-    let workTime: null|string = null;
-    let timeFullfilled: null|string = null;
-    let timeRemaing: null|Date = null;
+    let workTime: string | Number;
+    let timeFullfilled: null | string = null;
+    let timeRemaing: null | Date = null;
     let addedTime: number|string;
 
     $: currentDate = new Date();
@@ -43,7 +43,7 @@
         return timeDiff
     };
 
-    function addMinutesToCurrentDate (minutes: Number|string): Date {
+    function addMinutesToCurrentDate (minutes: Number|string|null): Date {
         const date: Date = new Date();
         date.setMinutes(date.getMinutes() + Number(minutes)*60);
 
@@ -69,7 +69,7 @@
         {:else if dateStarted && timeRemaing !== null}
             <div class="time-spans">
                 <div class="time-span"></div>
-                <div class="time-fullffilled" style="width: {timeFullfilled}"></div>
+                <div class="time-fullffilled" style="width: {timeFullfilled};"></div>
             </div>
             <div class="time-content">
                 <p class="time-remaining">Time left: <span>{timeRemaing.toLocaleTimeString()}</span></p>
@@ -99,7 +99,6 @@
     $main: #333852;
     $bright-main: #6a7199;
     $inactive-main: #292d41;
-
 
     :global() {
         font-family: 'Lato';

@@ -21,71 +21,79 @@
 
     $: optionsShown = false;
 
-    function addTask(taskName: string) {
-        taskStarted = true;
-        const newTask: Task = {
-            taskName: taskName,
-            timeSpan: [{
-                started: currentLocaleTime,
-                ended: null
-            }]
+    class TaskManager {
+        static addTask(taskName: string) {
+            taskStarted = true;
+            const newTask: Task = {
+                taskName: taskName,
+                timeSpan: [{
+                    started: currentLocaleTime,
+                    ended: null
+                }]
+            }
+            taskList = [...taskList, newTask];
         }
-        taskList = [...taskList, newTask];
-    }
 
-    function endTask() {
-        if (!pause) {
+        static endTask() {
+            if (!pause) {
+                taskList.findLast((task: Task) => {
+                    if (task.taskName === currentTask) {
+                        task.timeSpan.findLast((span) => span.ended = currentLocaleTime);
+                    }
+                });
+                taskList = taskList;
+            }
+            taskStarted = false;
+        }
+
+        static pauseTask() {
+            pause = true;
             taskList.findLast((task: Task) => {
-                task.timeSpan.findLast((span) => span.ended = currentLocaleTime)
+                task.timeSpan.findLast((span) => span.ended = currentLocaleTime);
             });
             taskList = taskList;
         }
-        taskStarted = false;
-    }
 
-    function pauseTask() {
-        pause = true;
-        taskList.findLast((task: Task) => {
-            task.timeSpan.findLast((span) => span.ended = currentLocaleTime);
-        });
-        taskList = taskList;
-    }
-
-    function unpauseTask() {
-        pause = false
-        taskList.findLast((task: Task) => {
-            task.timeSpan = [...task.timeSpan, {started: currentLocaleTime, ended: null}];
-        });
-        taskList = taskList;
-    }
-
-    function reactivateTask(task: Task) {
-        taskStarted = true;
-        const taskIndex = taskList.indexOf(task);
-        taskList.push(taskList.splice(taskIndex, 1)[0]);
-        taskList.find((_task: Task) => {
-            if (_task === task) {
+        static unpauseTask() {
+            pause = false
+            taskList.findLast((task: Task) => {
                 task.timeSpan = [...task.timeSpan, {started: currentLocaleTime, ended: null}];
-            }
-        });
-        taskList = taskList;
-    }
+            });
+            taskList = taskList;
+        }
 
-    function showOptions() {
-        optionsShown = !optionsShown;
+        static reactivateTask(task: Task) {
+            taskStarted = true;
+            const taskIndex = taskList.indexOf(task);
+            taskList.push(taskList.splice(taskIndex, 1)[0]);
+            taskList.find((_task: Task) => {
+                if (_task === task) {
+                    task.timeSpan = [...task.timeSpan, {started: currentLocaleTime, ended: null}];
+                }
+            });
+            taskList = taskList;
+        }
+
+        static showOptions() {
+            optionsShown = !optionsShown;
+        }
     }
 
 </script>
 
-<input type="text" disabled={taskStarted} placeholder="Write your task..." bind:value={currentTask} on:keyup={(event) =>  event.key === "Enter" ? addTask(currentTask) : ''}>
+<input type="text"
+    disabled={taskStarted}
+    placeholder="Write your task..."
+    bind:value={currentTask}
+    on:keyup={(event) =>  event.key === "Enter" ? TaskManager.addTask(currentTask) : ''}>
 {#if  !taskStarted}
-    <button on:click={() => addTask(currentTask)}>Add Task +</button>
+    <button on:click={() => TaskManager.addTask(currentTask)}>Add Task +</button>
 {:else}
-    <button class="task-ender" on:click={() => endTask()}>End Task 😮‍💨</button>
+    <button class="task-ender" on:click={() => TaskManager.endTask()}>End Task 😮‍💨</button>
     {#if !pause}
-        <button class="task-pauser" on:click={() => pauseTask()}>Pause ✋</button>
+        <button class="task-pauser" on:click={() => TaskManager.pauseTask()}>Pause ✋</button>
     {:else}
-        <button class="task-pauser" on:click={() => unpauseTask()}>Unpause 🫡</button>
+        <button class="task-pauser" on:click={() => TaskManager.unpauseTask()}>Unpause 🫡</button>
     {/if}
 {/if}
 {#if taskList[0]}
@@ -106,14 +114,16 @@
                     {/each}
                 </div>
                 {#if !taskStarted}
-                    <div class="more" on:click={() => showOptions()}>
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <div class="more" on:click={() => TaskManager.showOptions()}>
                         <div class="dot"></div>
                         <div class="dot"></div>
                         <div class="dot"></div>
 
                         {#if optionsShown}
                             <div class="options">
-                                <button class="option-button" on:click={() => reactivateTask(task)}>Reactivate</button>
+                                <button class="option-button" on:click={() => TaskManager.reactivateTask(task)}>Reactivate</button>
                                 <button>Incoming feature</button>
                             </div>
                         {/if}
