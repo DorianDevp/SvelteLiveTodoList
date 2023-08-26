@@ -1,104 +1,49 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { time, endOfTheDay } from "../stores/stores";
+
     import Todo from "../components/Todo.svelte";
+    import TimeAdd from "../components/TimeAdd.svelte";
 
-    let workTime: string | Number;
-    let timeFullfilled: null | string = null;
-    let timeRemaing: null | Date = null;
-    let addedTime: number|string;
+    let workTime: number = 0;
 
-    $: currentDate = new Date();
-    $: endOfTheDay = addMinutesToCurrentDate(workTime);
     $: dateStarted = false;
 
-
-    function startTimer() {
-        let i = 0;
-        const interval = setInterval(() => {
-            startDay(interval);
-            timeFullfilled = `${(i++ * 100)/ (Number(workTime)*3600)}%`;
-        }, 1000);
-
-        startDay(interval);
+    function startDay() {
+        setEndOfTheDay(workTime);
+        dateStarted = true;
     }
 
-    function startDay(dayFinisher: number) {
-        timeRemaing = setTimeRemaining();
-        if (timeRemaing !== null) {
-            dateStarted = true;
-            currentDate = new Date();
-        } else {
-            dateStarted = false;
-            clearInterval(dayFinisher);
-        }
-    }
+    function setEndOfTheDay (hours: number) {
+        if (!hours) return 0;
+        const endTime = $time.add(hours, 'hour');
 
-    function setTimeRemaining(): null|Date {
-        let timeDiff: null|Date = new Date(endOfTheDay.getTime() - currentDate.getTime());
-        if (timeDiff.getTime() <= 0) {
-            return null
-        }
-        timeDiff.setMinutes(timeDiff.getMinutes() - 60);
-
-        return timeDiff
+        endOfTheDay.set(endTime);
     };
-
-    function addMinutesToCurrentDate (minutes: Number|string|null): Date {
-        const date: Date = new Date();
-        date.setMinutes(date.getMinutes() + Number(minutes)*60);
-
-        return date
-    };
-
-    function addTimeToYourDay(minutes: Number|string) {
-        endOfTheDay.setMinutes(endOfTheDay.getMinutes() + Number(minutes)*60);
-        endOfTheDay = endOfTheDay;
-    }
-
 </script>
 
 <div class="container">
-    <div class="wrapper">
         {#if !dateStarted}
-            <h3>How many hours will you work?</h3>
-            <input type="number" bind:value={workTime} />
-            <button
-                on:click={() => startTimer()}>
-                Start your day ⌛️
-            </button>
-        {:else if dateStarted && timeRemaing !== null}
-            <div class="time-spans">
-                <div class="time-span"></div>
-                <div class="time-fullffilled" style="width: {timeFullfilled};"></div>
+            <div class="wrapper">
+                <h3>How many hours will you work?</h3>
+                <input type="number" bind:value={ workTime } />
+                <button
+                    disabled={ workTime <= 0 }
+                    on:click={ () => startDay() }>
+                    Start your day ⌛️
+                </button>
             </div>
-            <div class="time-content">
-                <p class="time-remaining">Time left: <span>{timeRemaing.toLocaleTimeString()}</span></p>
-                <p class="time-remaining">End at: <span>{endOfTheDay.toLocaleTimeString()}</span></p>
+        {:else if dateStarted && workTime !== null}
+            <div class="wrapper">
+                <TimeAdd workTime={ workTime } />
             </div>
-            <div class="add-time">
-                <input type="number" placeholder="Type time to add" bind:value={addedTime}>
-                <button on:click={() => addTimeToYourDay(addedTime)}>Add time</button>
+            <div class="wrapper">
+                <Todo />
             </div>
         {/if}
-    </div>
-    {#if dateStarted && timeRemaing !== null}
-        <div class="wrapper">
-            <Todo currentLocaleTime={currentDate.toLocaleTimeString()}></Todo>
-        </div>
-    {/if}
 </div>
 
 <style lang="scss">
-    $theme-red: #f37d7d;
-    $theme-green: #09e083;
-    $theme-bright-green: #757eab;
-    $theme-green-hoover: #057f4a;
-    $theme-dark-green: #0a3e07;
-    $darker-main: #1b1e2d;
-    $lighter-main: rgb(51, 56, 82);
-    $main: #333852;
-    $bright-main: #6a7199;
-    $inactive-main: #292d41;
+    @import '../styles/colors.scss';
 
     :global() {
         font-family: 'Lato';
@@ -121,6 +66,14 @@
         padding: 10px;
         color: white;
         font-size: 18px;
+
+        &:disabled {
+            background-color: $bright-main;
+
+            &::placeholder {
+                color: white;
+            }
+        }
     }
     :global(input)::placeholder {
         color: $bright-main;
@@ -135,40 +88,34 @@
         font-weight: bold;
         transition: .1s;
         color: #0a3e07;;
+
+        &.stop {
+            background-color: $theme-red;
+        }
+    }
+    :global(button.stop) {
+        background-color: $theme-red;
     }
     :global(button:hover) {
         background-color: $theme-green-hoover;
     }
-    .time-spans {
-        position: relative;
-    }
-    .time-span {
-        width: 100%;
-        height: 40px;
-        background-color: $inactive-main;
-        border-radius: 10px;
-    }
-    .time-fullffilled {
-        position: absolute;
-        height: 40px;
-        background-color: $theme-bright-green;
-        border-radius: 10px;
-        margin-top: -40px;
-
-    }
-    .time-remaining {
-        color: $darker-main;
-        font-size: 20px;
-        font-weight: bold;
+    :global(button[disabled]) {
+        cursor: initial;
+        background-color: $bright-main;
     }
     .container {
         display: flex;
+        flex-direction: column;
         align-items: self-start;
         gap: 40px;
         margin: 0 10%;
+
+        @media (min-width: 1024px) {
+            flex-direction: row;
+        }
+
         @media (min-width: 1360px) {
             margin: 0 15%;
-
         }
     }
     .wrapper {

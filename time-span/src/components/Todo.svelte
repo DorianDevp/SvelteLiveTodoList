@@ -1,87 +1,81 @@
 <script lang="ts">
-    import Loading from "./LoadingDots.svelte";
-    export let currentLocaleTime: string;
+  import { get, type Writable } from "svelte/store";
+    import { taskManager, TaskState } from "../utlis/TaskManager";
+    import LoadingDots from "./LoadingDots.svelte";
+    import CurrentTask from "./CurrentTask.svelte";
 
-    interface Task {
-        taskName: string,
-        timeSpan: TimeSpan[]
-    };
-    interface TimeSpan {
-        started: string,
-        ended: null|string,
-    }
+    let taskName: string = '';
 
-    let taskList: Task[] = [];
-
-    $: currentTask = '';
-
-    $: taskStarted = false;
-
-    $: pause = false;
-
-    $: optionsShown = false;
-
-    class TaskManager {
-        static addTask(taskName: string) {
-            taskStarted = true;
-            const newTask: Task = {
-                taskName: taskName,
-                timeSpan: [{
-                    started: currentLocaleTime,
-                    ended: null
-                }]
-            }
-            taskList = [...taskList, newTask];
-        }
-
-        static endTask() {
-            if (!pause) {
-                taskList.findLast((task: Task) => {
-                    if (task.taskName === currentTask) {
-                        task.timeSpan.findLast((span) => span.ended = currentLocaleTime);
-                    }
-                });
-                taskList = taskList;
-            }
-            taskStarted = false;
-        }
-
-        static pauseTask() {
-            pause = true;
-            taskList.findLast((task: Task) => {
-                task.timeSpan.findLast((span) => span.ended = currentLocaleTime);
-            });
-            taskList = taskList;
-        }
-
-        static unpauseTask() {
-            pause = false
-            taskList.findLast((task: Task) => {
-                task.timeSpan = [...task.timeSpan, {started: currentLocaleTime, ended: null}];
-            });
-            taskList = taskList;
-        }
-
-        static reactivateTask(task: Task) {
-            taskStarted = true;
-            const taskIndex = taskList.indexOf(task);
-            taskList.push(taskList.splice(taskIndex, 1)[0]);
-            taskList.find((_task: Task) => {
-                if (_task === task) {
-                    task.timeSpan = [...task.timeSpan, {started: currentLocaleTime, ended: null}];
-                }
-            });
-            taskList = taskList;
-        }
-
-        static showOptions() {
-            optionsShown = !optionsShown;
-        }
-    }
+    let { taskList, activeTask } = taskManager;
 
 </script>
 
-<input type="text"
+<h2 style="margin: 0;">ToDo</h2>
+<input type="text" disabled={$activeTask?.state === TaskState.Active} bind:value={taskName}>
+{#if $activeTask?.state === TaskState.Active}
+    <button class="stop" on:click={() => taskManager.stopTask()}>STOP</button>
+{:else}
+    <button on:click={() => taskManager.addTask(taskName)}>START</button>
+{/if}
+{#if $activeTask !== null}
+    <CurrentTask activeTask={$activeTask}/>
+{/if}
+<div class="task-list">
+    {#each $taskList as task}
+        <div>{task.name}</div>
+        <div class="time">
+            {#each task.timeSpans as time}
+                <p>{time.started}</p>
+                <p>{time.finished}</p>
+            {/each}
+        </div>
+        <button on:click={() => taskManager.reactivateTask(task.timeSpans)}>⏪</button>
+    {/each}
+</div>
+
+<style lang="scss">
+    @import '../styles/colors.scss';
+
+    .active-task {
+        background-color: $darker-main;
+        padding: 15px;
+        border-radius: 10px;
+
+        h3 {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+    }
+    .task-list {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: $darker-main;
+        border-radius: 10px;
+
+        .time {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <input type="text"
     disabled={taskStarted}
     placeholder="Write your task..."
     bind:value={currentTask}
@@ -114,8 +108,6 @@
                     {/each}
                 </div>
                 {#if !taskStarted}
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <div class="more" on:click={() => TaskManager.showOptions()}>
                         <div class="dot"></div>
                         <div class="dot"></div>
@@ -216,4 +208,4 @@
         display: flex;
         gap: 10px;
     }
-</style>
+</style> -->
