@@ -22,21 +22,21 @@ interface TimeSpan {
 export enum TaskState {
     Active = 'active',
     Paused = 'paused',
-    Finished = 'finished'
+    Finished = 'finished',
 };
 
 class SubTaskManager {
     subTasks: Writable<string[]> = writable([]);
 
     addSubTask(name: string): void {
-        this.subTasks.update(tasks => tasks = [...tasks, name])
+        this.subTasks.update(tasks => tasks = [...tasks, name]);
     }
 
     deleteSubTask(name: string): void {
         this.subTasks.update(tasks => {
-            tasks = tasks.filter(task => task !== name)
+            tasks = tasks.filter(task => task !== name);
 
-            return tasks
+            return tasks;
         })
     }
 
@@ -60,7 +60,7 @@ export class ActiveTask extends SubTaskManager {
     task: Writable<ActiveTask>;
 
     end(): void {
-        this.timeSpans.findLast(span => span.finished = get(time).format('HH:mm:ss'))
+        this.timeSpans.findLast(span => span.finished = get(time).format('HH:mm:ss'));
         this.task.set(this);
     }
 
