@@ -56,7 +56,6 @@ export class ActiveTask extends SubTaskManager {
         super();
         this.task = writable(this);
     }
-
     task: Writable<ActiveTask>;
 
     end(): void {
