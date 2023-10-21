@@ -7,18 +7,18 @@
 
     export let activeTask: Task;
 
-    const { subTasksManager, timeManager } = activeTask;
-    const { subTasks } = subTasksManager;
+    const { subtasksManager, timeManager } = activeTask;
+    const { subTasks } = subtasksManager;
     const { timeSpans } = timeManager;
 
     let subTaskName: string = '';
 
 
     const addSubtask = () => {
-        subTasksManager.add(subTaskName);
+        subtasksManager.add(subTaskName);
     }
     const deleteSubtask = () => {
-        subTasksManager.delete(subTaskName);
+        subtasksManager.delete(subTaskName);
     }
 
 </script>

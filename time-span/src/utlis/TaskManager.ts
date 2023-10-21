@@ -60,7 +60,7 @@ class TimeManager {
 
 }
 
-class SubTaskManager {
+class SubtaskManager {
     #subTasks = writable<string[]>([]);
 
     get subTasks() {
@@ -92,8 +92,10 @@ export class Task {
         public name: string,
         public state: TaskState = TaskState.Active,
         public timeManager = new TimeManager(),
-        public subTasksManager = new SubTaskManager(),
-    ) {}
+        public subtasksManager = new SubtaskManager(),
+    ) {
+        // this.name = writable(this.name);
+    }
 
     end(): void {
         this.timeManager.finish();
