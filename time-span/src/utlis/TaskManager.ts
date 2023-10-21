@@ -2,16 +2,17 @@ import { time } from "../stores/stores";
 import { get, writable } from 'svelte/store';
 import type { Writable, Updater } from "svelte/store";
 
-interface TaskHistory {
-    session: Task[];
+interface Session {
+    taskList: Task[];
     date: string;
+    state: 'active'|'finished';
 };
 
 export interface Task {
     name: string;
     state: TaskState;
     subTasks: string[];
-    timeSpans: TimeSpan[];
+    timeManager: TimeManager;
 };
 
 interface TimeSpan {
@@ -25,78 +26,115 @@ export enum TaskState {
     Finished = 'finished',
 };
 
-class SubTaskManager {
-    subTasks: Writable<string[]> = writable([]);
-
-    addSubTask(name: string): void {
-        this.subTasks.update(tasks => tasks = [...tasks, name]);
+class TimeManager {
+    constructor(
+    ) {
+        this.create();
     }
 
-    deleteSubTask(name: string): void {
-        this.subTasks.update(tasks => {
-            tasks = tasks.filter(task => task !== name);
+    #timeSpans = writable<TimeSpan[]>([]);
+    #activeTimeSpan: TimeSpan|null = null;
 
-            return tasks;
+    get timeSpans() {
+        return this.#timeSpans;
+    }
+
+    create() {
+        const timespan = {
+            started: get(time).format('HH:mm:ss'),
+            finished: null
+        };
+
+        this.#timeSpans.subscribe(time => {
+            this.#activeTimeSpan = time[time.length - 1];
         })
+
+        this.#timeSpans.update(times => [...times, timespan]);
     }
 
-    renameSubTask(newName: string): void {
+    finish() {
+        if(!this.#activeTimeSpan) return;
+
+        this.#activeTimeSpan.finished = get(time).format('HH:mm:ss');
+    }
+
+}
+
+class SubTaskManager {
+    #subTasks = writable<string[]>([]);
+
+    get subTasks() {
+        return this.#subTasks;
+    }
+
+    add(name: string) {
+        this.#subTasks.update(list => {
+            const duplicate = list.find(task => task === name);
+            if(duplicate) return list;
+
+            list.push(name);
+
+            return list;
+        });
+    }
+
+    delete(name: string): void {
+        this.#subTasks.update(list => { return list.filter(task => task !== name) });
+    }
+
+    rename(newName: string): void {
+        // coming soon
     }
 }
 
-export class ActiveTask extends SubTaskManager {
+export class Task {
     constructor(
         public name: string,
         public state: TaskState = TaskState.Active,
-        public timeSpans: TimeSpan[] = [{
-            started: get(time).format('HH:mm:ss'),
-            finished: null
-        }],
-    ) {
-        super();
-        this.task = writable(this);
-    }
-    task: Writable<ActiveTask>;
+        public timeManager = new TimeManager(),
+        public subTasksManager = new SubTaskManager(),
+    ) {}
 
     end(): void {
-        this.timeSpans.findLast(span => span.finished = get(time).format('HH:mm:ss'));
-        this.task.set(this);
+        this.timeManager.finish();
     }
 
     rename(newName: string) {
         this.name = newName;
-        this.task.set(this);
+        console.log(this);
     }
 }
 
 export class TaskManager  {
-    taskList: Writable<ActiveTask[]> = writable([]);
-    activeTask: Writable<ActiveTask|null> = writable(null);
+    #taskList = writable<Task[]>([]);
+    #activeTask = writable<Task | null>(null);
+
+    get taskList() {
+        return this.#taskList;
+    }
+
+    get activeTask() {
+        return this.#activeTask;
+    }
 
     addTask(taskName: string): void {
-        this.activeTask.set(new ActiveTask(taskName));
+        const newTask = new Task(taskName);
+        this.#activeTask.set(newTask);
     }
 
     stopTask() {
-        if(!get(this.activeTask)?.end) return;
+        const activeTask = get(this.#activeTask)
 
-        get(this.activeTask)!.end();
-        this.taskList.update(tasks => tasks = [...tasks, get(this.activeTask) as ActiveTask]);
+        if(!activeTask) return;
 
-        this.activeTask.set(null);
+        activeTask.end();
+        this.taskList.update(tasks => [...tasks, activeTask])
+
+        this.#activeTask.set(null);
     }
 
     reactivateTask(timeSpans: TimeSpan[]): void {
-        const selectedTask = get(this.taskList)
-            .find(task => task.timeSpans === timeSpans);
-        if(selectedTask) {
-            this.activeTask.set(selectedTask);
-            this.taskList.update(tasks => {
-                tasks = tasks.filter(el => el !== selectedTask);
-
-                return tasks;
-            });
-        }
+        // coming soon
     }
 }
 

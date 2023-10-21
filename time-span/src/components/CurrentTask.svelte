@@ -1,54 +1,66 @@
 <script lang="ts">
-    import type { ActiveTask  } from "../utlis/TaskManager";
+    import { get, type Writable } from "svelte/store";
+    import type { Task  } from "../utlis/TaskManager";
     import { TaskState } from "../utlis/TaskManager";
-  import LoadingDots from "./LoadingDots.svelte";
+    import LoadingDots from "./LoadingDots.svelte";
+  import { afterUpdate, beforeUpdate } from "svelte";
 
-    export let activeTask: ActiveTask;
+    export let activeTask: Task;
 
-    const { task } = activeTask;
-    const { subTasks } = $task;
+    const { subTasksManager, timeManager } = activeTask;
+    const { subTasks } = subTasksManager;
+    const { timeSpans } = timeManager;
 
     let subTaskName: string = '';
 
-    const handleClick = () => {
-        activeTask.addSubTask(subTaskName);
-        console.log(activeTask);
+
+    const addSubtask = () => {
+        subTasksManager.add(subTaskName);
     }
+    const deleteSubtask = () => {
+        subTasksManager.delete(subTaskName);
+    }
+
 </script>
 
 <div class="active-task">
     <div class="dashboard">
         <h3>{activeTask.name}</h3>
         <div class="time">
-            {#each activeTask.timeSpans as time}
-                <div class="span">
-                    <p>{time.started}</p>
-                    {#if time.finished}
-                        <p>{time.finished}</p>
-                    {:else}
-                        <LoadingDots />
-                    {/if}
-                </div>
-            {/each}
+            {#if $timeSpans?.length > 0}
+                {#each $timeSpans as time}
+                    <div class="span">
+                        <p>{time.started}</p>
+                        {#if time.finished}
+                            <p>{time.finished}</p>
+                        {:else}
+                            <LoadingDots />
+                        {/if}
+                    </div>
+                {/each}
+            {/if}
         </div>
-        <p
+        <!-- <p
             class="state"
-            class:active={activeTask.state === TaskState.Active}
-            class:paused={activeTask.state !== TaskState.Active} >
-            {activeTask.state}
-        </p>
+            class:active={$task.state === TaskState.Active}
+            class:paused={$task.state !== TaskState.Active} >
+            {$task.state}
+        </p> -->
     </div>
     <div class="subtasks">
         <div class="add">
             <input type="text" placeholder="write your subtask +" bind:value={subTaskName}>
-            <button on:click={handleClick}>Add subtask</button>
+            <button on:click={ addSubtask }>Add subtask</button>
         </div>
         {#if $subTasks?.length > 0}
             <div class="list">
                 {#each $subTasks as sub}
                     <div class="sub">
                         <p>{sub}</p>
-                        <button class="del" on:click={() => activeTask.deleteSubTask(sub)}>DEL</button>
+                        <button class="del"
+                            on:click={ deleteSubtask }>
+                            DEL
+                        </button>
                     </div>
                 {/each}
             </div>
