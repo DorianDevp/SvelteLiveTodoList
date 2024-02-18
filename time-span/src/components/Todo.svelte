@@ -21,7 +21,7 @@
         STOP
     </button>
 {:else}
-    <button on:click={() => taskManager.addTask(taskName)}>START</button>
+    <button on:click={() => taskManager.startTask(taskName)}>START</button>
 {/if}
 
 {#if $activeTask !== null}
@@ -33,7 +33,7 @@
         <div>
             <div>{task.name}</div>
             <div class="time">
-                {#each get(task.timeManager.timeSpans) as time}
+                {#each get(task.timeSpans) as time}
                     <p>{time.started}</p>
                     <p>{time.finished}</p>
                 {/each}

@@ -22,24 +22,24 @@
 </script>
 
 <div class="container">
-        {#if !dateStarted}
-            <div class="wrapper">
-                <h3>How many hours will you work?</h3>
-                <input type="number" bind:value={ workTime } />
-                <button
-                    disabled={ workTime <= 0 }
-                    on:click={ () => startDay() }>
-                    Start your day ⌛️
-                </button>
-            </div>
-        {:else if dateStarted && workTime !== null}
-            <div class="wrapper">
-                <TimeAdd workTime={ workTime } />
-            </div>
-            <div class="wrapper">
-                <Todo />
-            </div>
-        {/if}
+    {#if !dateStarted}
+        <div class="wrapper">
+            <h3>How many hours will you work?</h3>
+            <input type="number" bind:value={ workTime } />
+            <button
+                disabled={ workTime <= 0 }
+                on:click={ () => startDay() }>
+                Start your day ⌛️
+            </button>
+        </div>
+    {:else if dateStarted && workTime !== null}
+        <div class="wrapper">
+            <TimeAdd workTime={ workTime } />
+        </div>
+        <div class="wrapper">
+            <Todo />
+        </div>
+    {/if}
 </div>
 
 <style lang="scss">
